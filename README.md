@@ -11,16 +11,20 @@ What this creates is something known in economics as perfect competition.  Stori
 
 For this project, the below gives an outline of our final objectives. 
 
-The community
+Understanding the fanfiction community
 * Characterize the users on the site
 * Predict who will write what stories
 * Predict who will read what stories
-* Find the most influential author on the site
 
-The stories
+Understanding fanfiction stories
 * Characterize the stories being published
 * Predict what types of stories will be successful
 * Tell how well a story is performing relative to its peers
+
+Cool things to figure out
+* Figure out the sentiment of a review
+* Find the most influential author on the site
+* Recommend stories based off what a user has favorited
 * Characterize the content of successful stories
 
 Note that is is an on-going project, and the results will be published in the same sequence that they are performed. Also note that some of the objectives on the list requires technologies that we currently do not have. We will leave an update when this has changed.

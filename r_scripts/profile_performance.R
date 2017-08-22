@@ -7,6 +7,9 @@
 # ENVIRONMENT SETUP
 ###############################################################################
 
+# import libraries
+library(stargazer)
+
 # clear working evironment
 rm(list = ls())
 
@@ -17,17 +20,19 @@ rm(list = ls())
 # retrieve raw data
 data_raw <- read.csv("./../data/clean_data/df_profile.csv")
 
+# create working copy
+data <- subset(data_raw, status != 'inactive')
+
 ###############################################################################
 # VARIABLE SETUP
 ###############################################################################
 
-# create working copy
-data <- subset(data_raw, status != 'inactive')
+# list all variables 
+all_vars <- c("isauthor", "lnwritten", "tenure", "lnfavs", "hasprofile", 
+             "community")
 
 # create variables
-data["author"] = (data["status"] == "author") + 0
 data["community"] = (data["cc"] > 0) + 0
-data["profile"] = data["profile"]
 
 # redefine variables
 data["favs"] <- data["fa"] + data["fs"]
@@ -37,15 +42,16 @@ data["lnfavs"] <- log(data["favs"] + 1)
 data["lnwritten"] <- log(data["st"])
 
 # subset data
-data_authors <- subset(data, status == "author")
+data <- data[, all_vars]
+data_authors <- subset(data, isauthor == 1)
 
 ###############################################################################
 # LOGISTIC REGRESSION
 ###############################################################################
 
 # define relevant variables
-indep_vars <-c("community", "lnfavs", "tenure", "profile")
-dep_var <- c("author")
+indep_vars <-c("tenure", "lnfavs", "hasprofile", "community")
+dep_var <- c("isauthor")
 
 # define regressand vector y and design matrix X
 data_reg <- na.omit(data[c(dep_var, indep_vars)])
@@ -56,11 +62,13 @@ X = as.matrix(data_reg[indep_vars])
 logit <- glm(y ~ X, family = "binomial")
 summary(logit)
 
-ourguess <- predict(logit, type = "response")
-ourguess[ourguess <= 0.5] = 0
-ourguess[ourguess > 0.5] = 1
+# make prediction
+guess <- predict(logit, type = "response")
+guess[guess <= 0.5] = 0
+guess[guess > 0.5] = 1
 
-1 - sum(abs(y - ourguess))/length(ourguess)
+# calculate accuracy
+1 - sum(abs(y - guess))/length(guess)
 
 ###############################################################################
 # LINEAR REGRESSION

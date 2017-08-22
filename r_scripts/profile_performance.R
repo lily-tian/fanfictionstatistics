@@ -14,19 +14,20 @@ rm(list = ls())
 # DATA SETUP
 ###############################################################################
 
-# retrieve data
-data <- read.csv("./../data/clean_data/df_profile.csv")
+# retrieve raw data
+data_raw <- read.csv("./../data/clean_data/df_profile.csv")
 
 ###############################################################################
 # VARIABLE SETUP
 ###############################################################################
 
-# reconstruct binary variables
-data["author"] <- 0
-data[data$isauthor == "True", "author"] <- 1
-data["profile"] <- 0
-data[data$hasprofile == "True", "profile"] <- 1
-data <- data[, !(names(data) %in% c("isauthor", "hasprofile"))]
+# create working copy
+data <- subset(data_raw, status != 'inactive')
+
+# create variables
+data["author"] = (data["status"] == "author") + 0
+data["community"] = (data["cc"] > 0) + 0
+data["profile"] = data["profile"]
 
 # redefine variables
 data["favs"] <- data["fa"] + data["fs"]
@@ -36,7 +37,6 @@ data["lnfavs"] <- log(data["favs"] + 1)
 data["lnwritten"] <- log(data["st"])
 
 # subset data
-data <- subset(data, status != 'inactive')
 data_authors <- subset(data, status == "author")
 
 ###############################################################################
@@ -44,14 +44,15 @@ data_authors <- subset(data, status == "author")
 ###############################################################################
 
 # define relevant variables
-indep_vars <-c("cc", "lnfavs", "tenure", "profile")
+indep_vars <-c("community", "lnfavs", "tenure", "profile")
 dep_var <- c("author")
 
 # define regressand vector y and design matrix X
 data_reg <- na.omit(data[c(dep_var, indep_vars)])
 y = data_reg[[dep_var]]
 X = as.matrix(data_reg[indep_vars])
-  
+
+# find logit  
 logit <- glm(y ~ X, family = "binomial")
 summary(logit)
 

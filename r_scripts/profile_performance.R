@@ -7,9 +7,6 @@
 # ENVIRONMENT SETUP
 ###############################################################################
 
-# import libraries
-library(stargazer)
-
 # clear working evironment
 rm(list = ls())
 
@@ -46,6 +43,15 @@ data <- data[, all_vars]
 data_authors <- subset(data, isauthor == 1)
 
 ###############################################################################
+# TRAINING VS TESTING SETS
+###############################################################################
+
+set.seed(100)
+train <- sample(1:nrow(data), nrow(data)/2)
+data_train <- data[train, ]
+data_test <- data[!(1:nrow(data) %in% train), ]
+
+###############################################################################
 # LOGISTIC REGRESSION
 ###############################################################################
 
@@ -54,33 +60,39 @@ indep_vars <-c("tenure", "lnfavs", "hasprofile", "community")
 dep_var <- c("isauthor")
 
 # define regressand vector y and design matrix X
-data_reg <- na.omit(data[c(dep_var, indep_vars)])
-y = data_reg[[dep_var]]
-X = as.matrix(data_reg[indep_vars])
+data_train <- na.omit(data_train[c(dep_var, indep_vars)])
+y = data_train[[dep_var]]
+X = as.matrix(data_train[indep_vars])
 
 # find logit  
 logit <- glm(y ~ X, family = "binomial")
 summary(logit)
 
+# define regressand vector y and design matrix X
+data_test <- na.omit(data_test[c(dep_var, indep_vars)])
+y = data_test[[dep_var]]
+X = as.matrix(data_test[indep_vars])
+
 # make prediction
-guess <- predict(logit, type = "response")
+guess <- predict(logit, newdata = data_test, type = "response")
 guess[guess <= 0.5] = 0
 guess[guess > 0.5] = 1
 
 # calculate accuracy
-1 - sum(abs(y - guess))/length(guess)
+sum(y == guess)/length(guess)
 
 ###############################################################################
 # LINEAR REGRESSION
 ###############################################################################
 
-# defines relevant variables
-indep_vars <-c("cc", "lnfavs", "tenure", "profile")
+# define relevant variables
+indep_vars <-c("tenure", "lnfavs", "hasprofile", "community")
 dep_var <- c("lnwritten")
 
 # define regressand vector y and design matrix X
 y = data_authors[[dep_var]]
 X = as.matrix(data_authors[indep_vars])
 
+# find linear regression
 reg <- glm(y ~ X, family = "gaussian")
 summary(reg)

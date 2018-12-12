@@ -72,5 +72,5 @@ for i in range(0, n, 1):
 time.time() - t0
 
 # exports data
-with open('data/raw_data/data_stories_text', 'wb') as fp:
+with open('data/raw_data/data_story_text', 'wb') as fp:
     pickle.dump(data_stories, fp)
